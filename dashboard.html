@@ -57,6 +57,8 @@
         var CountyArray;
         var parsedVaccination;
         var parsedCounty;
+        var currentWeek;
+    
         const CountyChoiceArray = ["dropdown_menu1", "dropdown_menu2", "dropdown_menu3"];
 
         var xmlhttp1 = new XMLHttpRequest();
@@ -93,10 +95,21 @@
             VaccArray = parsedVaccination.features;
 
             if (week === 0) {
+
+                currentWeek = (VaccArray.length - 1)-52;
                 var WeekNumber = VaccArray.length - 1;
 
             } else {
+                
                 WeekNumber = week;
+
+                if (week <= 52) {
+                    currentWeek = week;
+
+                } else {
+                    currentWeek = week-52;
+                }
+
             }
 
             var TotVacc2021HTML = "";
@@ -104,7 +117,7 @@
             TotVacc2021HTML += "<h2>Total vaccinations administered year to date</h2><h1>";
 
 
-            var TotWeeklyVacc = "<h2>Week " + WeekNumber + "</h2><br><h3>Total vaccinations administered: " + VaccArray[WeekNumber].attributes.TotalweeklyVaccines + "<br><br>";
+            var TotWeeklyVacc = "<h2>Week " + currentWeek + "</h2><br><h3>Total vaccinations administered: " + VaccArray[WeekNumber].attributes.TotalweeklyVaccines + "<br><br>";
             var ModWeeklyVacc = "Total Moderna Vaccinations: " + VaccArray[WeekNumber].attributes.Moderna + "<br><br>";
             var PfiWeeklyVacc = "Total Pfizer Vaccinations: " + VaccArray[WeekNumber].attributes.Pfizer + "<br><br>";
             var JansWeeklyVacc = "Total Janssen Vaccinations: " + VaccArray[WeekNumber].attributes.Janssen + "<br><br>";
