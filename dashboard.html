@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>COVID-19 Data Overview Ireland</title>
+    <link rel="stylesheet" type="text/css" href="dashboard_styling.css">
+
+    <!--The following line of code is from https://www.w3schools.com/html/html_responsive.asp-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <header>
+        <h1>COVID-19 Data Overview Ireland</h1>
+    </header>
+
+    <nav>
+        <div>
+            <!--dropdown menu instructions from https://1bestcsharp.blogspot.com/2017/03/javascript-get-selected-option-value.html-->
+            <select id="weekdropdown" onchange="GetSelectedWeek()" class="weekdropdown">
+            </select>
+        </div>
+    </nav>
+
+    <div class="flex-container1">
+
+        <select id="dropdown_menu1" onchange="CompareCountyData()">
+            <option value="">Select County</option>
+        </select>
+
+        <select id="dropdown_menu2" onchange="CompareCountyData()">
+            <option value="">Select County</option>
+        </select>
+
+        <select id="dropdown_menu3" onchange="CompareCountyData()">
+            <option value="">Select County</option>
+        </select>
+
+    </div>
+
+    <ul id="countydata" style="list-style-type:none;"></ul>
+
+    <div class="flex-container2">
+        <div id="id01"></div>
+        <div id="id02"></div>
+        <div id="id03"></div>
+    </div>
+
+    <footer>
+        <div id="id07"></div>
+    </footer>
+
+    <script>
+
+        var VaccArray;
+        var CountyArray;
+        var parsedVaccination;
+        var parsedCounty;
+        const CountyChoiceArray = ["dropdown_menu1", "dropdown_menu2", "dropdown_menu3"];
+
+        var xmlhttp1 = new XMLHttpRequest();
+        var url = "https://services-eu1.arcgis.com/z6bHNio59iTqqSUY/arcgis/rest/services/COVID19_Weekly_Vaccination_Figures/FeatureServer/0/query?where=1%3D1&outFields=ExtractDate,Week,TotalweeklyVaccines,Moderna,Pfizer,Janssen,AstraZeneca,Fully_Age10to19,Fully_Age20to29,Fully_Age30to39,Fully_Age40to49,Fully_Age50to59,Fully_Age60to69,Fully_Age70to79,Fully_Age80_,Fully_NA,FullyCum_Age20to29,FullyCum_Age30to39,FullyCum_Age40to49,FullyCum_Age50to59,FullyCum_Age60to69,FullyCum_Age70to79,FullyCum_80_,FullyCum_NA,FullyPer_Age10to19,FullyPer_Age20to29,FullyPer_Age30to39,FullyPer_Age40to49,FullyPer_Age50to59,FullyPer_Age60to69,FullyPer_Age70to79,FullyPer_80_,FullyPer_NA,FullyCum_Age10to19&outSR=4326&f=json";
+
+        xmlhttp1.onreadystatechange = function () {
+            if (xmlhttp1.readyState == 4 && xmlhttp1.status == 200) {
+                parsedVaccination = JSON.parse(xmlhttp1.responseText);
+            }
+        };
+
+        xmlhttp1.open("GET", url, true);
+        xmlhttp1.send();
+
+        var xmlhttp2 = new XMLHttpRequest();
+        var url = "https://services1.arcgis.com/eNO7HHeQ3rUcBllm/arcgis/rest/services/Covid19CountyStatisticsHPSCIrelandOpenData/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json";
+
+        xmlhttp2.onreadystatechange = function () {
+            if (xmlhttp2.readyState == 4 && xmlhttp2.status == 200) {
+                parsedCounty = JSON.parse(xmlhttp2.responseText);
+                VaccFunction(0);
+                AgeGroupsNum(0);
+                MinMaxCounty(parsedCounty);
+                DropDown(parsedVaccination, parsedCounty);
+            }
+        };
+
+        xmlhttp2.open("GET", url, true);
+        xmlhttp2.send();
+
+        //creates an overview of the % of vaccinated population
+        function VaccFunction(week) {
+
+            VaccArray = parsedVaccination.features;
+
+            if (week === 0) {
+                var WeekNumber = VaccArray.length - 1;
+
+            } else {
+                WeekNumber = week;
+            }
+
+            var TotVacc2021HTML = "";
+            var TotWeekly2021HTML = "";
+            TotVacc2021HTML += "<h2>Total vaccinations administered year to date</h2><h1>";
+
+
+            var TotWeeklyVacc = "<h2>Week " + WeekNumber + "</h2><br><h3>Total vaccinations administered: " + VaccArray[WeekNumber].attributes.TotalweeklyVaccines + "<br><br>";
+            var ModWeeklyVacc = "Total Moderna Vaccinations: " + VaccArray[WeekNumber].attributes.Moderna + "<br><br>";
+            var PfiWeeklyVacc = "Total Pfizer Vaccinations: " + VaccArray[WeekNumber].attributes.Pfizer + "<br><br>";
+            var JansWeeklyVacc = "Total Janssen Vaccinations: " + VaccArray[WeekNumber].attributes.Janssen + "<br><br>";
+            var AstraWeeklyVacc = "Total AstraZeneca Vaccinations: " + VaccArray[WeekNumber].attributes.AstraZeneca + "</h3>";
+            var TotVacc21 = 0; //will loop through the VaccArray to add up the weekly vaccine doses administered
+
+            for (var v = 1; v < WeekNumber; v++) {
+                TotVacc21 += VaccArray[v].attributes.TotalweeklyVaccines;
+            }
+
+            TotVacc2021HTML += TotVacc21 + "</h1></div>";
+            TotWeekly2021HTML += "<div>" + TotWeeklyVacc + ModWeeklyVacc + PfiWeeklyVacc + JansWeeklyVacc + AstraWeeklyVacc;
+
+            document.getElementById("id01").innerHTML = TotVacc2021HTML;
+            document.getElementById("id02").innerHTML = TotWeekly2021HTML;
+        }
+
+        //creates an overview of the number of vaccinated people within set age groups 
+        function AgeGroupsNum(week) {
+
+            VaccArray = parsedVaccination.features;
+
+            if (week === 0) {
+                var Weekid = VaccArray.length - 1;
+            } else {
+                var Weekid = week;
+            }
+
+            const agegroups = {
+                "Age 10 to 19": VaccArray[Weekid].attributes.FullyCum_Age10to19,
+                "Age 20 to 29": VaccArray[Weekid].attributes.FullyCum_Age20to29,
+                "Age 30 to 39": VaccArray[Weekid].attributes.FullyCum_Age30to39,
+                "Age 40 to 49": VaccArray[Weekid].attributes.FullyCum_Age40to49,
+                "Age 50 to 59": VaccArray[Weekid].attributes.FullyCum_Age50to59,
+                "Age 60 to 69": VaccArray[Weekid].attributes.FullyCum_Age60to69,
+                "Age 70 to 79": VaccArray[Weekid].attributes.FullyCum_Age70to79,
+                "Age 80": VaccArray[Weekid].attributes.FullyCum_80_,
+                "Age NA": VaccArray[Weekid].attributes.FullyCum_NA
+            };
+
+            var AgeGroupVaccHTML = "<h2>Fully vaccinated per age group</h2><h3>";
+
+            for (const A in agegroups) {
+                AgeGroupVaccHTML += `${A}: ${agegroups[A]}` + "<br>"; //loop statement from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in
+            }
+
+            AgeGroupVaccHTML += "</h3><br><br><button onclick=\"AgeGroupsPer(" + Weekid + ")\">Show data in % instead</button>"
+            document.getElementById("id03").innerHTML = AgeGroupVaccHTML;
+        }
+
+        //creates an overview of % of vaccinated people within set age groups 
+        function AgeGroupsPer(week) {
+
+            VaccArray = parsedVaccination.features;
+
+            if (week === 0) {
+                var Weekid = VaccArray.length - 1;
+            } else {
+                var Weekid = week;
+            }
+
+            const totagegroups = {
+                "Age 10 to 19": Math.round(VaccArray[Weekid].attributes.FullyPer_Age10to19 * 100) + "%", //formula for rounding numbers from https://pawelgrzybek.com/rounding-and-truncating-numbers-in-javascript/
+                "Age 20 to 29": Math.round(VaccArray[Weekid].attributes.FullyPer_Age20to29 * 100) + "%",
+                "Age 30 to 39": Math.round(VaccArray[Weekid].attributes.FullyPer_Age30to39 * 100) + "%",
+                "Age 40 to 49": Math.round(VaccArray[Weekid].attributes.FullyPer_Age40to49 * 100) + "%",
+                "Age 50 to 59": Math.round(VaccArray[Weekid].attributes.FullyPer_Age50to59 * 100) + "%",
+                "Age 60 to 69": Math.round(VaccArray[Weekid].attributes.FullyPer_Age60to69 * 100) + "%",
+                "Age 70 to 79": Math.round(VaccArray[Weekid].attributes.FullyPer_Age70to79 * 100) + "%",
+                "Age 80": Math.round(VaccArray[Weekid].attributes.FullyPer_80_ * 100) + "%",
+                "Age NA": Math.round(VaccArray[Weekid].attributes.FullyPer_NA * 100) + "%"
+            };
+
+            var AgeGroupVaccHTML = "<h2>Fully vaccinated per age group</h2><h3>";
+
+            for (const A in totagegroups) {
+                AgeGroupVaccHTML += `${A}: ${totagegroups[A]}` + "<br>"; //loop statement from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in
+            }
+            AgeGroupVaccHTML += "</h3><br><br><button onclick=\"AgeGroupsNum(" + Weekid + ")\">Show data as a total number instead</button>";
+            document.getElementById("id03").innerHTML = AgeGroupVaccHTML;
+        }
+
+        //this prints the comparison of the county data
+        function CompareCountyData() {
+
+            var CountyArray = parsedCounty.features;
+            var CountyHTML = "";
+
+            for (const element of CountyChoiceArray) {
+                for (var v = 0; v < 26; v++) {
+                    if (CountyArray[v].attributes.CountyName == document.getElementById(element).value) {
+                        var county = (document.getElementById(element).value);
+                        CountyHTML += "<li><h2>" + county + "</h2><h3>Population: " + CountyArray[v].attributes.PopulationCensus16 + "<br>Confirmed Covid Cases: " + CountyArray[v].attributes.ConfirmedCovidCases + "<br>Population Proportional Covid Cases: " + Math.round(CountyArray[v].attributes.PopulationProportionCovidCases) + "<br>Incidence rate per 100,000 people: " + Math.round(CountyArray[v].attributes.ConfirmedCovidCases / CountyArray[v].attributes.PopulationCensus16 * 100000) + "</h3></li>";
+                    }
+                }
+            }
+            document.getElementById("countydata").innerHTML = CountyHTML;
+        }
+
+        // this function populates the week dropdown menu and the county dropdown menu
+        function DropDown(obj, obj2) {
+
+            VaccArray = obj.features;
+            var dropdownoptions = "<option value=\"Week\">Choose a week</option>";
+            for (var v = 1; v < VaccArray.length; v++) {
+                dropdownoptions += "<option value=\"" + VaccArray[v].attributes.Week + "\">" + VaccArray[v].attributes.Week + "</option>";
+            }
+            document.getElementById("weekdropdown").innerHTML = dropdownoptions;
+
+
+            CountyArray = obj2.features;
+
+            var countydropdown1 = document.getElementById('dropdown_menu1');
+            var countydropdown2 = document.getElementById('dropdown_menu2');
+            var countydropdown3 = document.getElementById('dropdown_menu3');
+
+            let option; //the for loops create the three different dropdown menus with County names
+
+            for (var v = 0; v < CountyArray.length; v++) {
+                option = document.createElement("option");
+                option.text = CountyArray[v].attributes.CountyName;
+                option.value = CountyArray[v].attributes.CountyName;
+                countydropdown1.add(option);
+            }
+
+            for (var v = 0; v < CountyArray.length; v++) {
+                option = document.createElement("option");
+                option.text = CountyArray[v].attributes.CountyName;
+                option.value = CountyArray[v].attributes.CountyName;
+                countydropdown2.add(option);
+            }
+
+            for (var v = 0; v < CountyArray.length; v++) {
+                option = document.createElement("option");
+                option.text = CountyArray[v].attributes.CountyName;
+                option.value = CountyArray[v].attributes.CountyName;
+                countydropdown3.add(option);
+            }
+        }
+
+        //this function calls the functions VaccFunctiom, AgeGroupsNum and AgeGroupsPer when the user selects a week, so that data for that week is displayed
+        function GetSelectedWeek() {
+            var selection = document.getElementById("weekdropdown").value;
+            if (selection != "Week") {
+                for (var v = 1; v < VaccArray.length; v++) {
+                    if (VaccArray[v].attributes.Week == selection) {
+                        selection = v;
+                        VaccFunction(selection);
+                        AgeGroupsNum(selection);
+                        AgeGroupsPer(selection);
+                    }
+                }
+
+            } else {
+                selection = VaccArray.length - 1;
+                VaccFunction(selection);
+                AgeGroupsNum(selection);
+                AgeGroupsPer(selection);
+            }
+        }
+
+        //this function calculcates the counties with the highest and the lowest incidence rate
+        function MinMaxCounty(obj) {
+
+            CountyArray = obj.features;
+            var MaxCountyHTML = "";
+            var MinCountyHTML = "";
+            var MinCounty = 999999;
+            var MaxCounty = 0;
+
+
+            for (var v = 0; v < 26; v++) {
+                if ((CountyArray[v].attributes.ConfirmedCovidCases / CountyArray[v].attributes.PopulationCensus16 * 100000) > MaxCounty) {
+                    MaxCounty = CountyArray[v].attributes.ConfirmedCovidCases / CountyArray[v].attributes.PopulationCensus16 * 100000;
+                    MaxCountyHTML = CountyArray[v].attributes.CountyName + " </b>currently has the highest incidence rate with " + Math.round(MaxCounty) + " cases per 100,000 people<br><br>";
+                }
+            }
+            for (var v = 0; v < 26; v++) {
+                if ((CountyArray[v].attributes.ConfirmedCovidCases / CountyArray[v].attributes.PopulationCensus16 * 100000) < MinCounty) {
+                    MinCounty = CountyArray[v].attributes.ConfirmedCovidCases / CountyArray[v].attributes.PopulationCensus16 * 100000;
+                    MinCountyHTML = "<b>" + CountyArray[v].attributes.CountyName + " </b>currently has the lowest incidence rate with " + Math.round(MinCounty) + " cases per 100,000 people</p>";
+                }
+            }
+            CountyHTML = "<p><b>" + MaxCountyHTML + MinCountyHTML;
+            document.getElementById("id07").innerHTML = CountyHTML;
+        }
+
+    </script>
+
+</body>
+
+</html>

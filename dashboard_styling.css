@@ -1,0 +1,96 @@
+body {
+  font-family: Verdana, sans-serif;
+  background-color: #fff;
+  height: 100%;
+}
+h1 {
+  font-size: 1.5em;
+  color: rgb(0, 83, 104);
+}
+h2 {
+  font-size: 0.8em;
+}
+h3 {
+  font-size: 0.5em;
+}
+p {
+  font-size: 0.5em;
+  font-style: italic;
+  color: brown;
+}
+nav {
+  display: inline-block;
+}
+.flex-container1 {
+  display: flex;
+  background-color: #fff;
+  padding: 0%;
+}
+
+ul {
+overflow: hidden;
+}
+
+li {
+float: left;
+margin: 2%;
+}
+
+.flex-container2 {
+  display: flex;
+  background-color: #fff;
+  padding: 0%;
+}
+.flex-container2 > div {
+  background-color: #fff;
+  min-width: 0;
+  margin: 1%;
+  padding: 1%;
+  border-radius: 3%;
+  display: inline;
+  background-color: rgb(227, 245, 223);
+  overflow-x: auto;
+  box-shadow: 0px 0px 5px #c7d6ce;
+}
+
+/*button styling from https://codepen.io/elmahdim/pen/hlmri, used for both button and dropdown menus*/
+button {
+  background-color: #6BBE92;
+  min-width: 0;
+  border-radius: 3%;
+  border-color: #6BBE92;
+  padding: 5%;
+  text-align: center;
+  margin: 0 auto;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0px 0px 5px #5f7067;
+}
+.weekdropdown, .flex-container1 > select {
+  background-color: #6BBE92;
+  width: 165px;
+  display: inline;
+  margin: 1%;
+  border-radius: 3%;
+  border-color: #6BBE92;
+  padding: 1%;
+  text-align: center;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0px 0px 5px #dcece3;
+}
+
+@media (max-width: 550px) {
+  .flex-container1 {
+      flex-direction: column;
+ }
+  .flex-container2 {
+      flex-direction: column;
+ }
+  p, h3, h4 {
+      font-size: 0.7em;
+ }
+  h2, h1 {
+      font-size: 1em;
+ }
+}
